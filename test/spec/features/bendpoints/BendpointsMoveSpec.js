@@ -4,7 +4,7 @@ require('../../../TestHelper');
 
 var canvasEvent = require('../../../util/MockEvents').createCanvasEvent;
 
-/* global bootstrapDiagram, inject */
+/* global bootstrapDiagram, inject, sinon */
 
 var bendpointsModule = require('../../../../lib/features/bendpoints'),
     rulesModule = require('./rules'),
@@ -204,7 +204,37 @@ describe('features/bendpoints - move', function() {
   });
 
 
+  describe.only('hints', function() {
+
+    it('should provide hints object', function(canvas, bendpointMove, dragging, eventBus) {
+
+      // given
+      var spy = sinon.spy(function(e) {
+        expect(e.context.hints).to.have.property('bendpointMove');
+      });
+
+      eventBus.once('commandStack.execute', spy);
+
+      // when
+      bendpointMove.start(canvasEvent({ x: 550, y: 200 }), connection, 2, true);
+
+      dragging.hover({
+        element: connection,
+        gfx: canvas.getGraphics(connection)
+      });
+
+      dragging.move(canvasEvent({ x: 400, y: 100 }));
+      dragging.end();
+
+      // then
+      expect(spy).to.have.been.called;
+    });
+
+  });
+
+
   describe('modeling', function() {
+
 
     it('should add bendpoint', inject(function(canvas, bendpointMove, dragging) {
 
